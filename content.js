@@ -4,7 +4,7 @@ window.CONTENT = {
   "tagline1": "Character-driven genre films",
   "tagline2": "A tri-state production company",
   "reelUrl": "",
-  "updated": "2026-10-31T18:31:22.159Z"
+  "updated": "2026-10-31T19:22:47.824Z"
  },
  "about": {
   "heading": "Production Management",
@@ -86,7 +86,7 @@ window.CONTENT = {
    "key": "tbote",
    "title": "The Beginning of the End",
    "genre": "Supernatural Thriller",
-   "year": "2023",
+   "year": "2025",
    "runtime": "22:24",
    "status": "",
    "company": "Arondyte Pictures",

@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Arondyte Editor</title>
+<link rel="icon" href="/media/site/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Syncopate:wght@400;700&display=swap">
+<style>
+:root { --bg:#000; --panel:#0a0c0e; --raise:#111417; --line:#1d2327; --text:#d9d9d6; --dim:#8b9296; --faint:#5a6266; --steel:#3f7490; --steel-hi:#5b97b8; --bad:#d9704f; --ok:#8fbfa6; }
+* { box-sizing: border-box; }
+html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font:400 14px/1.45 Jost, system-ui, sans-serif; }
+button, input, textarea, select { font:inherit; color:inherit; }
+a { color:var(--steel-hi); }
+.app { display:grid; grid-template-rows:56px 1fr; height:100%; }
+.top { display:flex; align-items:center; gap:16px; padding:0 18px; border-bottom:1px solid var(--line); background:var(--panel); }
+.top .brand { font:700 11px/1 Syncopate, sans-serif; letter-spacing:.22em; text-transform:uppercase; white-space:nowrap; }
+.top .brand i { font-style:normal; color:var(--steel-hi); }
+.top .sp { flex:1; }
+.status { font-size:12px; letter-spacing:.06em; color:var(--dim); }
+.status.dirty { color:#ffcf8a; }
+.status.ok { color:var(--ok); }
+.btn { background:none; border:1px solid var(--line); color:var(--text); padding:8px 14px; font-size:11px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer; border-radius:2px; }
+.btn:hover { border-color:var(--steel); color:#fff; }
+.btn:disabled { opacity:.35; cursor:default; border-color:var(--line); color:var(--dim); }
+.btn.pri { background:var(--steel); border-color:var(--steel); color:#fff; }
+.btn.pri:hover { background:var(--steel-hi); border-color:var(--steel-hi); }
+.btn.pri:disabled { background:#16303d; border-color:#16303d; color:#6e8a98; }
+.btn.sm { padding:5px 9px; font-size:10px; }
+.btn.bad:hover { border-color:var(--bad); color:var(--bad); }
+.body { display:grid; grid-template-columns:230px minmax(360px, 560px) 1fr; min-height:0; }
+.side { border-right:1px solid var(--line); background:var(--panel); overflow:auto; padding:14px 0 24px; }
+.side h4 { margin:18px 18px 8px; font:400 10px/1 Jost; letter-spacing:.24em; text-transform:uppercase; color:var(--faint); }
+.side .item { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; border-left:2px solid transparent; padding:9px 16px 9px 16px; cursor:pointer; color:var(--dim); }
+.side .item:hover { color:var(--text); background:var(--raise); }
+.side .item.on { color:#fff; border-left-color:var(--steel); background:var(--raise); }
+.side .item small { margin-left:auto; color:var(--faint); font-size:11px; }
+.side .add { margin:10px 16px 0; }
+.conn { margin:22px 16px 0; padding-top:14px; border-top:1px solid var(--line); font-size:12px; color:var(--dim); }
+.conn b { color:var(--text); font-weight:500; }
+.main { overflow:auto; padding:22px 26px 80px; border-right:1px solid var(--line); }
+.main h2 { margin:0 0 4px; font:700 13px/1.3 Syncopate, sans-serif; letter-spacing:.14em; text-transform:uppercase; }
+.main .sub { margin:0 0 22px; color:var(--dim); font-size:13px; }
+fieldset { border:0; border-top:1px solid var(--line); margin:26px 0 0; padding:16px 0 0; }
+legend { padding:0 10px 0 0; font:400 10px/1 Jost; letter-spacing:.26em; text-transform:uppercase; color:var(--steel-hi); }
+.f { display:block; margin:0 0 14px; }
+.f > span { display:block; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:5px; }
+.f > small { display:block; color:var(--faint); font-size:12px; margin-top:4px; }
+input[type=text], input[type=url], input[type=number], input[type=email], textarea, select { width:100%; background:var(--raise); border:1px solid var(--line); border-radius:2px; padding:9px 10px; outline:none; }
+input:focus, textarea:focus, select:focus { border-color:var(--steel); }
+textarea { resize:vertical; min-height:70px; line-height:1.5; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.chk { display:flex; align-items:center; gap:9px; margin:0 0 14px; cursor:pointer; }
+.chk input { accent-color:var(--steel); width:16px; height:16px; }
+.media { display:flex; gap:14px; align-items:flex-start; margin-bottom:14px; }
+.thumb { width:120px; aspect-ratio:16/10; background:var(--raise); border:1px solid var(--line); object-fit:cover; flex:none; }
+.thumb.contain { object-fit:contain; background:#1a1f22; }
+.cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+.card { border:1px solid var(--line); background:var(--raise); padding:8px; display:flex; flex-direction:column; gap:7px; }
+.card img { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; }
+.card input[type=text] { padding:6px 7px; font-size:12px; }
+.card .acts { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+.lau { display:grid; grid-template-columns:90px 1fr; gap:12px; border:1px solid var(--line); background:var(--raise); padding:10px; margin-bottom:10px; }
+.lau .thumb { width:90px; aspect-ratio:1; }
+.svcbox { border:1px solid var(--line); background:var(--raise); padding:12px; margin-bottom:10px; }
+.grp { border-top:1px solid var(--line); padding-top:14px; margin-top:14px; }
+.hint { color:var(--faint); font-size:12px; }
+.range { display:flex; align-items:center; gap:10px; }
+.range input[type=range] { flex:1; accent-color:var(--steel); }
+.range output { width:42px; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums; }
+.color { display:flex; align-items:center; gap:10px; }
+.color input[type=color] { width:46px; height:34px; padding:0; border:1px solid var(--line); background:none; }
+.pv { display:flex; flex-direction:column; min-width:0; background:#050607; }
+.pvbar { display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line); }
+.pvbar .btn.on { border-color:var(--steel); color:#fff; }
+.pvbar .sp { flex:1; }
+.pvwrap { flex:1; min-height:0; display:flex; justify-content:center; align-items:stretch; padding:14px; }
+.pvwrap iframe { border:1px solid var(--line); background:#000; width:100%; height:100%; transition:width .2s; }
+.pvwrap.phone iframe { width:390px; max-width:100%; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.78); display:grid; place-items:center; z-index:50; padding:20px; }
+.dialog { width:min(520px, 100%); background:var(--panel); border:1px solid var(--line); padding:26px; }
+.dialog h3 { margin:0 0 10px; font:700 12px/1.3 Syncopate, sans-serif; letter-spacing:.16em; text-transform:uppercase; }
+.dialog p { color:var(--dim); margin:0 0 14px; }
+.dialog .acts { display:flex; gap:10px; justify-content:flex-end; margin-top:18px; }
+.steps { margin:0 0 4px; padding-left:18px; color:var(--dim); }
+.steps li { margin:5px 0; }
+.err { color:var(--bad); }
+.okc { color:var(--ok); }
+.prog { height:3px; background:var(--line); margin:14px 0 6px; }
+.prog i { display:block; height:100%; width:0; background:var(--steel-hi); transition:width .25s; }
+@media (max-width: 1180px) { .body { grid-template-columns:200px 1fr; } .pv { display:none; } .main { border-right:0; } }
+@media (max-width: 720px) { .body { grid-template-columns:1fr; grid-template-rows:auto 1fr; } .side { border-right:0; border-bottom:1px solid var(--line); max-height:34vh; } .top .status { display:none; } .row2, .row3 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Arondyte <i>/</i> Editor</div>
+    <div class="sp"></div>
+    <div class="status" id="status">Loading…</div>
+    <button class="btn" id="discard" type="button" disabled>Discard changes</button>
+    <button class="btn pri" id="publish" type="button" disabled>Publish</button>
+  </header>
+  <div class="body">
+    <nav class="side" id="side" aria-label="Sections"></nav>
+    <main class="main" id="main"></main>
+    <section class="pv" id="pv">
+      <div class="pvbar">
+        <button class="btn sm on" id="pvWide" type="button">Wide</button>
+        <button class="btn sm" id="pvPhone" type="button">Phone</button>
+        <div class="sp"></div>
+        <span class="hint">Live preview of your unpublished edits</span>
+      </div>
+      <div class="pvwrap" id="pvwrap"><iframe id="frame" title="Site preview"></iframe></div>
+    </section>
+  </div>
+</div>
+<div id="modal"></div>
+
+<script>
+(function () {
+  "use strict";
+  var LS = "arondyte_editor_v1";
+  var DEFAULT_REPO = "Arondyte1/arondyte-site", DEFAULT_BRANCH = "main";
+  var MAX_FILE = 25 * 1024 * 1024;
+  var state = { content: null, orig: "", pending: {}, sel: { t: "film", key: null }, conn: loadConn(), sourceLabel: "", busy: false };
+
+  /* ---------- helpers ---------- */
+  function $(s, r) { return (r || document).querySelector(s); }
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      var v = attrs[k];
+      if (v == null || v === false) continue;
+      if (k === "class") el.className = v;
+      else if (k === "text") el.textContent = v;
+      else if (k.slice(0, 2) === "on") el.addEventListener(k.slice(2), v);
+      else if (k === "value") el.value = v;
+      else el.setAttribute(k, v === true ? "" : v);
+    }
+    for (var i = 2; i < arguments.length; i++) add(el, arguments[i]);
+    return el;
+  }
+  function add(el, c) {
+    if (c == null || c === false) return;
+    if (Array.isArray(c)) c.forEach(function (x) { add(el, x); });
+    else el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  function uid() { return Math.random().toString(36).slice(2, 8); }
+  function slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "film"; }
+  function bytes(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+  function loadConn() { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch (e) { return {}; } }
+  function saveConn() { try { localStorage.setItem(LS, JSON.stringify(state.conn)); } catch (e) {} }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function film(key) { return state.content.films.filter(function (f) { return f.key === key; })[0]; }
+  function srcOf(p) { if (!p) return ""; if (state.pending[p]) return state.pending[p].url; return /^(https?:|blob:|data:)/.test(p) ? p : "/" + p; }
+  function walkStrings(o, fn) { if (typeof o === "string") fn(o); else if (Array.isArray(o)) o.forEach(function (x) { walkStrings(x, fn); }); else if (o && typeof o === "object") for (var k in o) walkStrings(o[k], fn); }
+  function isDirty() {
+    if (!state.content) return false;
+    return JSON.stringify(state.content) !== state.orig;
+  }
+
+  /* ---------- content parse / serialize ---------- */
+  function parseContent(txt) {
+    var m = txt.match(/window\.CONTENT\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) throw new Error("content.js is not in the expected format");
+    return JSON.parse(m[1]);
+  }
+  function serializeContent(c) {
+    return "/* Site content. Managed by the Arondyte editor at /admin; safe to edit by hand. */\nwindow.CONTENT = " + JSON.stringify(c, null, 1) + ";\n";
+  }
+
+  /* ---------- status + dirty ---------- */
+  var statusEl = $("#status"), pubBtn = $("#publish"), disBtn = $("#discard");
+  function refreshStatus(msg, cls) {
+    var d = isDirty();
+    if (msg) { statusEl.textContent = msg; statusEl.className = "status " + (cls || ""); }
+    else if (d) { statusEl.textContent = "Unpublished changes"; statusEl.className = "status dirty"; }
+    else { statusEl.textContent = "All changes published"; statusEl.className = "status ok"; }
+    pubBtn.disabled = !d || state.busy; disBtn.disabled = !d || state.busy;
+  }
+  var pvTimer;
+  function touch() { refreshStatus(); clearTimeout(pvTimer); pvTimer = setTimeout(reloadPreview, 700); }
+
+  /* ---------- preview ---------- */
+  var frame = $("#frame");
+  function previewContent() {
+    return JSON.parse(JSON.stringify(state.content, function (k, v) { return (typeof v === "string" && state.pending[v]) ? state.pending[v].url : v; }));
+  }
+  function reloadPreview() {
+    if (!state.content) return;
+    window.__DRAFT = previewContent();
+    frame.src = "/?preview=1&_=" + Date.now();
+  }
+  frame.addEventListener("load", function () {
+    try {
+      var w = frame.contentWindow, d = frame.contentDocument, s = state.sel;
+      setTimeout(function () {
+        try {
+          if (s.t === "film" && s.key && w.__film) w.__film.open(s.key);
+          else if (s.t === "about") d.querySelector('[data-open="about"]').click();
+          else if (s.t === "contact") d.querySelector('[data-open="contact"]').click();
+        } catch (e) {}
+      }, 500);
+    } catch (e) {}
+  });
+  $("#pvWide").addEventListener("click", function () { $("#pvwrap").className = "pvwrap"; $("#pvWide").classList.add("on"); $("#pvPhone").classList.remove("on"); });
+  $("#pvPhone").addEventListener("click", function () { $("#pvwrap").className = "pvwrap phone"; $("#pvPhone").classList.add("on"); $("#pvWide").classList.remove("on"); });
+
+  /* ---------- form builders ---------- */
+  function wrap(label, el, help) { return h("label", { class: "f" }, h("span", { text: label }), el, help ? h("small", { text: help }) : null); }
+  function text(label, obj, prop, o) {
+    o = o || {};
+    var el = h(o.area ? "textarea" : "input", { type: o.area ? null : (o.type || "text"), placeholder: o.ph || "", rows: o.rows || null });
+    el.value = obj[prop] == null ? "" : obj[prop];
+    el.addEventListener("input", function () { obj[prop] = el.value; if (o.after) o.after(); touch(); });
+    return wrap(label, el, o.help);
+  }
+  function lines(label, get, set, o) {
+    o = o || {};
+    var el = h("textarea", { rows: o.rows || 5, placeholder: o.ph || "" });
+    el.value = get();
+    el.addEventListener("input", function () { set(el.value); touch(); });
+    return wrap(label, el, o.help);
+  }
+  function check(label, obj, prop, after) {
+    var el = h("input", { type: "checkbox" }); el.checked = !!obj[prop];
+    el.addEventListener("change", function () { obj[prop] = el.checked; touch(); if (after) after(); });
+    return h("label", { class: "chk" }, el, h("span", { text: label }));
+  }
+  function pairsToText(a) { return (a || []).map(function (r) { return (r[0] ? r[0] + " | " : "| ") + (r[1] || ""); }).join("\n"); }
+  function textToPairs(t) {
+    return t.split("\n").map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
+      var i = l.indexOf("|"); return i < 0 ? ["", l] : [l.slice(0, i).trim(), l.slice(i + 1).trim()];
+    });
+  }
+  function listToText(a) { return (a || []).join("\n"); }
+  function textToList(t) { return t.split("\n").map(function (l) { return l.trim(); }).filter(Boolean); }
+  function move(arr, i, d) { var j = i + d; if (j < 0 || j >= arr.length) return false; var t = arr[i]; arr[i] = arr[j]; arr[j] = t; return true; }
+
+  /* ---------- image + file handling ---------- */
+  function readImage(file, o) {
+    o = o || {};
+    if (file.type === "image/svg+xml") return Promise.resolve({ blob: file, ext: "svg" });
+    var mime = o.mime || "image/jpeg", max = o.max || 2000, q = o.q || 0.84;
+    return (window.createImageBitmap ? createImageBitmap(file) : Promise.reject(new Error("unsupported"))).then(function (bmp) {
+      var sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      var w = Math.round(bmp.width * sc), hh = Math.round(bmp.height * sc);
+      var cv = document.createElement("canvas"); cv.width = w; cv.height = hh;
+      var cx = cv.getContext("2d");
+      if (mime === "image/jpeg") { cx.fillStyle = "#000"; cx.fillRect(0, 0, w, hh); }
+      cx.drawImage(bmp, 0, 0, w, hh);
+      return new Promise(function (res) { cv.toBlob(function (b) { res({ blob: b, ext: mime === "image/png" ? "png" : "jpg" }); }, mime, q); });
+    });
+  }
+  function stash(path, blob) {
+    if (state.pending[path]) URL.revokeObjectURL(state.pending[path].url);
+    state.pending[path] = { blob: blob, url: URL.createObjectURL(blob) };
+  }
+  function pickFiles(accept, multiple) {
+    return new Promise(function (res) {
+      var i = h("input", { type: "file", accept: accept }); if (multiple) i.multiple = true;
+      i.addEventListener("change", function () { res(Array.prototype.slice.call(i.files)); });
+      i.click();
+    });
+  }
+  function uploadImage(dir, name, opts) {
+    return pickFiles("image/*", false).then(function (fl) {
+      if (!fl[0]) return null;
+      return readImage(fl[0], opts).then(function (r) { var p = "media/" + dir + "/" + name + "-" + uid() + "." + r.ext; stash(p, r.blob); return p; });
+    }).catch(function () { alert("That image couldn't be read. Try a JPG or PNG."); return null; });
+  }
+
+  /* ---------- sidebar ---------- */
+  function renderSide() {
+    var side = $("#side"); side.innerHTML = "";
+    add(side, h("h4", { text: "Films" }));
+    state.content.films.forEach(function (f) {
+      var on = state.sel.t === "film" && state.sel.key === f.key;
+      add(side, h("button", { class: "item" + (on ? " on" : ""), type: "button", onclick: function () { select({ t: "film", key: f.key }); } },
+        h("span", { text: f.title || "Untitled" }), h("small", { text: f.soon ? "soon" : (f.year || "") })));
+    });
+    add(side, h("button", { class: "btn sm add", type: "button", text: "+ Add film", onclick: addFilm }));
+    add(side, h("h4", { text: "Pages" }));
+    [["about", "About"], ["contact", "Contact"], ["site", "Home & reel link"]].forEach(function (p) {
+      add(side, h("button", { class: "item" + (state.sel.t === p[0] ? " on" : ""), type: "button", onclick: function () { select({ t: p[0] }); } }, h("span", { text: p[1] })));
+    });
+    var c = state.conn;
+    add(side, h("div", { class: "conn" },
+      c.token ? [h("div", {}, "Connected to ", h("b", { text: c.repo || DEFAULT_REPO })), h("button", { class: "btn sm", style: "margin-top:8px", type: "button", text: "Change", onclick: connectDialog })]
+        : [h("div", { text: "Not connected to GitHub yet. You can edit and preview now; connect before publishing." }), h("button", { class: "btn sm", style: "margin-top:8px", type: "button", text: "Connect", onclick: connectDialog })],
+      state.sourceLabel ? h("div", { class: "hint", style: "margin-top:10px", text: state.sourceLabel }) : null));
+  }
+  function select(s) { state.sel = s; renderSide(); renderMain(); reloadPreview(); }
+  function refreshSideLabels() { renderSideKeepFocus(); }
+  function renderSideKeepFocus() { var a = document.activeElement; var st = $("#side").scrollTop; renderSide(); $("#side").scrollTop = st; if (a && a.focus) try { a.focus(); } catch (e) {} }
+
+  /* ---------- film actions ---------- */
+  function addFilm() {
+    var n = 1, key; do { key = "new-film" + (n > 1 ? "-" + n : ""); n++; } while (film(key));
+    state.content.films.push({ key: key, title: "New Film", genre: "", year: "", runtime: "", status: "In development", company: "Arondyte Pictures", soon: true, watch: "", imdb: "", logline: "", lead: "Justin Cole Mossa", leadLabel: "", extra: [], starring: [], clip: "", poster: "", pos: "50% 50%", panP: null, ar: "", hover: "", glow: "rgba(63,116,144,.30)", lx: "50%", ly: "40%", stillsLabel: "", compact: false, stills: [], laurels: [], cast: [], crew: [] });
+    state.sel = { t: "film", key: key }; renderSide(); renderMain(); touch();
+  }
+
+  /* ---------- main renderers ---------- */
+  function renderMain() {
+    var m = $("#main"); m.innerHTML = ""; m.scrollTop = 0;
+    var t = state.sel.t;
+    if (t === "film") renderFilm(m, film(state.sel.key));
+    else if (t === "about") renderAbout(m);
+    else if (t === "contact") renderContact(m);
+    else renderSite(m);
+  }
+
+  function renderFilm(m, f) {
+    if (!f) { add(m, h("p", { class: "sub", text: "Pick a film on the left." })); return; }
+    var idx = state.content.films.indexOf(f), arr = state.content.films;
+    add(m, h("h2", { text: f.title || "Untitled film" }));
+    add(m, h("p", { class: "sub" }, "Order on the site: " + (idx + 1) + " of " + arr.length + ". ",
+      h("button", { class: "btn sm", type: "button", text: "Move up", disabled: idx === 0 ? "" : null, onclick: function () { if (move(arr, idx, -1)) { renderSide(); renderMain(); touch(); } } }), " ",
+      h("button", { class: "btn sm", type: "button", text: "Move down", disabled: idx === arr.length - 1 ? "" : null, onclick: function () { if (move(arr, idx, 1)) { renderSide(); renderMain(); touch(); } } })));
+
+    var basics = h("fieldset", {}, h("legend", { text: "Basics" }),
+      text("Title", f, "title", { after: refreshSideLabels }),
+      h("div", { class: "row3" }, text("Genre", f, "genre"), text("Year", f, "year", { after: refreshSideLabels }), text("Runtime", f, "runtime", { ph: "e.g. 22:24" })),
+      text("Status", f, "status", { ph: "Leave blank for a released film", help: "Examples: In post-production, In development, In pre-production. Blank = shows the year." }),
+      text("Production credit", f, "company", { help: "Shown on the home screen and film page, e.g. Arondyte Pictures · OD7 Films" }),
+      check("“Coming soon” page (hides the video and stills)", f, "soon", function () { renderSideKeepFocus(); }));
+    add(m, basics);
+
+    add(m, h("fieldset", {}, h("legend", { text: "Links" }),
+      h("div", { class: "row2" }, text("Watch link", f, "watch", { type: "url", ph: "https://youtube.com/…" }), text("IMDb link", f, "imdb", { type: "url", ph: "https://imdb.com/title/…" }))));
+
+    add(m, h("fieldset", {}, h("legend", { text: "Story & people" }),
+      text("Logline", f, "logline", { area: true, rows: 4 }),
+      h("div", { class: "row2" }, text("Lead credit label", f, "leadLabel", { ph: "Written, directed & produced by" }), text("Lead credit name", f, "lead")),
+      lines("Starring", function () { return listToText(f.starring); }, function (v) { f.starring = textToList(v); }, { rows: 4, help: "One name per line." }),
+      lines("Extra credit rows", function () { return pairsToText(f.extra); }, function (v) { f.extra = textToPairs(v); }, { rows: 3, help: "One per line: Label | Name   (e.g. Executive producers | Chris Dooly)" })));
+
+    /* media */
+    var med = h("fieldset", {}, h("legend", { text: "Poster & clip" }));
+    var pimg = h("img", { class: "thumb", alt: "", src: srcOf(f.poster) }); if (!f.poster) pimg.style.visibility = "hidden";
+    add(med, h("div", { class: "media" }, pimg, h("div", {},
+      h("div", { class: "hint", text: "Poster frame: shown while the clip loads and as the image for the film." }),
+      h("div", { style: "margin-top:8px" }, h("button", { class: "btn sm", type: "button", text: f.poster ? "Replace poster" : "Upload poster", onclick: function () {
+        uploadImage(f.key, "poster", { max: 2000 }).then(function (p) { if (p) { f.poster = p; pimg.src = srcOf(p); pimg.style.visibility = ""; touch(); } });
+      } })))));
+    var clipLabel = h("div", { class: "hint", text: clipDesc(f.clip) });
+    add(med, h("div", { class: "media" }, h("div", { class: "thumb", style: "display:grid;place-items:center;color:var(--faint);font-size:11px;letter-spacing:.2em", text: "CLIP" }), h("div", {},
+      clipLabel,
+      h("div", { style: "margin-top:8px;display:flex;gap:8px;flex-wrap:wrap" },
+        h("button", { class: "btn sm", type: "button", text: f.clip ? "Replace clip" : "Upload clip", onclick: function () {
+          pickFiles("video/mp4", false).then(function (fl) {
+            var file = fl[0]; if (!file) return;
+            if (file.type !== "video/mp4") { alert("Please choose an .mp4 file."); return; }
+            if (file.size > MAX_FILE) { alert("That clip is " + bytes(file.size) + ". Cloudflare allows up to 25 MB per file. Re-export it smaller (see the note below)."); return; }
+            var p = "media/" + f.key + "/clip-" + uid() + ".mp4"; stash(p, file); f.clip = p; clipLabel.textContent = clipDesc(p); touch();
+          });
+        } }),
+        f.clip ? h("button", { class: "btn sm bad", type: "button", text: "Remove clip", onclick: function () { f.clip = ""; clipLabel.textContent = clipDesc(""); touch(); } }) : null),
+      h("div", { class: "hint", style: "margin-top:8px", text: "Best: MP4 (H.264), no audio, about 1920 px wide, under 10 MB. Export tip: ffmpeg -i in.mov -vf scale=1920:-2 -c:v libx264 -crf 24 -an -movflags +faststart clip.mp4" }))));
+
+    var pos = String(f.pos || "50% 50%").match(/(-?[\d.]+)%\s+(-?[\d.]+)%/) || [0, 50, 50];
+    var px = +pos[1], py = +pos[2];
+    function setPos() { f.pos = px + "% " + py + "%"; touch(); }
+    add(med, slider("Crop focus: left to right", px, 0, 100, function (v) { px = v; setPos(); }, "Which part of a wide frame stays visible when the screen is narrower."));
+    add(med, slider("Crop focus: top to bottom", py, 0, 100, function (v) { py = v; setPos(); }));
+    if (f.panP && f.panP.length > 1) add(med, h("p", { class: "hint", text: "This film has a moving phone crop set in code; leave it as is." }));
+    else {
+      var hasPan = !!(f.panP && f.panP.length), pv = hasPan ? f.panP[0][1] : 50, rng;
+      var pc = check("Custom phone crop (portrait screens)", { v: hasPan }, "v", null);
+      pc.querySelector("input").addEventListener("change", function (e) { f.panP = e.target.checked ? [[0, pv]] : null; rng.style.display = e.target.checked ? "" : "none"; touch(); });
+      add(med, pc);
+      rng = slider("Phone crop: % from left", pv, 0, 100, function (v) { pv = v; f.panP = [[0, v]]; touch(); }); rng.style.display = hasPan ? "" : "none";
+      add(med, rng);
+    }
+    add(m, med);
+
+    /* stills */
+    var st = h("fieldset", {}, h("legend", { text: "Stills" }));
+    add(st, text("Section label", f, "stillsLabel", { ph: "Stills", help: "Use “Sneak peek” for films still in post." }));
+    var grid = h("div", { class: "cards" });
+    function drawStills() {
+      grid.innerHTML = "";
+      f.stills.forEach(function (s, i) {
+        var alt = h("input", { type: "text", placeholder: "Describe the still", value: s.alt || "" });
+        alt.addEventListener("input", function () { s.alt = alt.value; touch(); });
+        var wide = h("input", { type: "checkbox" }); wide.checked = !!s.wide; wide.addEventListener("change", function () { s.wide = wide.checked; touch(); });
+        add(grid, h("div", { class: "card" }, h("img", { src: srcOf(s.src), alt: "" }), alt,
+          h("div", { class: "acts" }, h("label", { class: "chk", style: "margin:0;font-size:12px" }, wide, h("span", { text: "Wide" })),
+            h("button", { class: "btn sm", type: "button", text: "←", title: "Move earlier", onclick: function () { if (move(f.stills, i, -1)) { drawStills(); touch(); } } }),
+            h("button", { class: "btn sm", type: "button", text: "→", title: "Move later", onclick: function () { if (move(f.stills, i, 1)) { drawStills(); touch(); } } }),
+            h("button", { class: "btn sm bad", type: "button", text: "✕", title: "Remove", onclick: function () { f.stills.splice(i, 1); drawStills(); touch(); } }))));
+      });
+    }
+    drawStills(); add(st, grid);
+    add(st, h("div", { style: "margin-top:12px" }, h("button", { class: "btn sm", type: "button", text: "+ Add stills", onclick: function () {
+      pickFiles("image/*", true).then(function (fl) {
+        return fl.reduce(function (pr, file) {
+          return pr.then(function () { return readImage(file, { max: 2000 }).then(function (r) { var p = "media/" + f.key + "/still-" + uid() + "." + r.ext; stash(p, r.blob); f.stills.push({ src: p, alt: "", wide: false }); }); });
+        }, Promise.resolve());
+      }).then(function () { drawStills(); touch(); }).catch(function () { alert("One of those images couldn't be read. Try JPG or PNG."); });
+    } })));
+    add(m, st);
+
+    /* laurels */
+    var lf = h("fieldset", {}, h("legend", { text: "Laurels & awards" })), lbox = h("div");
+    function drawLaurels() {
+      lbox.innerHTML = "";
+      f.laurels.forEach(function (l, i) {
+        var im = h("img", { class: "thumb contain", src: srcOf(l.img), alt: "" });
+        add(lbox, h("div", { class: "lau" }, h("div", {}, im, h("button", { class: "btn sm", style: "margin-top:6px", type: "button", text: "Replace", onclick: function () {
+          uploadImage(f.key, "laurel", { mime: "image/png", max: 700 }).then(function (p) { if (p) { l.img = p; im.src = srcOf(p); touch(); } });
+        } })),
+          h("div", {}, text("Bold line", l, "b", { ph: "Official Selection" }), text("Details", l, "t", { area: true, rows: 2, ph: "Festival name, year (a new line becomes a line break)" }), text("Alt text", l, "alt", { ph: "Describe the laurel" }),
+            h("div", { style: "display:flex;gap:6px" },
+              h("button", { class: "btn sm", type: "button", text: "↑", onclick: function () { if (move(f.laurels, i, -1)) { drawLaurels(); touch(); } } }),
+              h("button", { class: "btn sm", type: "button", text: "↓", onclick: function () { if (move(f.laurels, i, 1)) { drawLaurels(); touch(); } } }),
+              h("button", { class: "btn sm bad", type: "button", text: "Remove", onclick: function () { f.laurels.splice(i, 1); drawLaurels(); touch(); } })))));
+      });
+    }
+    drawLaurels(); add(lf, lbox);
+    add(lf, h("button", { class: "btn sm", type: "button", text: "+ Add laurel", onclick: function () {
+      uploadImage(f.key, "laurel", { mime: "image/png", max: 700 }).then(function (p) { if (p) { f.laurels.push({ img: p, alt: "", b: "", t: "" }); drawLaurels(); touch(); } });
+    } }));
+    add(lf, h("p", { class: "hint", text: "Use a white or light laurel on a transparent background (PNG); the site tints it on hover." }));
+    add(m, lf);
+
+    add(m, h("fieldset", {}, h("legend", { text: "Cast & crew" }),
+      lines("Cast", function () { return pairsToText(f.cast); }, function (v) { f.cast = textToPairs(v); }, { rows: 8, help: "One per line: Role | Actor. Leave the role empty to continue a group (| Jade Chew)." }),
+      lines("Crew", function () { return pairsToText(f.crew); }, function (v) { f.crew = textToPairs(v); }, { rows: 12, help: "One per line: Job | Name" })));
+
+    /* advanced */
+    var adv = h("details", { style: "margin-top:26px;border-top:1px solid var(--line);padding-top:16px" }, h("summary", { class: "hint", style: "cursor:pointer;letter-spacing:.2em;text-transform:uppercase;font-size:10px", text: "Look & feel" }));
+    var hv = f.hover || "";
+    var colorIn = h("input", { type: "color", value: /^#[0-9a-f]{6}$/i.test(hv) ? hv : "#3f7490" });
+    var colorTxt = h("input", { type: "text", value: hv, placeholder: "Brand blue (default)" });
+    colorIn.addEventListener("input", function () { f.hover = colorIn.value; colorTxt.value = f.hover; touch(); });
+    colorTxt.addEventListener("input", function () { f.hover = colorTxt.value.trim(); if (/^#[0-9a-f]{6}$/i.test(f.hover)) colorIn.value = f.hover; touch(); });
+    add(adv, wrap("Hover colour", h("div", { class: "color" }, colorIn, colorTxt, h("button", { class: "btn sm", type: "button", text: "Reset", onclick: function () { f.hover = ""; colorTxt.value = ""; touch(); } })), "Colour the title, laurels and details turn when hovering the film title on the home screen."));
+    add(adv, text("Background glow (only used when there is no video)", f, "glow", { ph: "rgba(63,116,144,.30)" }));
+    add(adv, h("div", { class: "row2" }, text("Glow position, left", f, "lx", { ph: "50%" }), text("Glow position, top", f, "ly", { ph: "40%" })));
+    add(adv, text("Video aspect ratio override", f, "ar", { ph: "e.g. 1.896", help: "Leave blank unless a clip looks stretched." }));
+    add(adv, check("Compact stills grid", f, "compact"));
+    add(adv, h("p", { class: "hint", text: "Page address key: " + f.key }));
+    add(m, adv);
+
+    /* delete */
+    var del = h("button", { class: "btn bad", type: "button", text: "Delete this film" });
+    del.addEventListener("click", function () {
+      if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Click again to delete"; setTimeout(function () { del.dataset.armed = ""; del.textContent = "Delete this film"; }, 3500); return; }
+      state.content.films.splice(idx, 1);
+      state.sel = { t: "film", key: state.content.films[0] ? state.content.films[0].key : null };
+      renderSide(); renderMain(); touch(); reloadPreview();
+    });
+    add(m, h("div", { style: "margin-top:34px" }, del));
+  }
+  function clipDesc(p) { if (!p) return "No clip yet."; var pe = state.pending[p]; return pe ? "New clip ready to publish (" + bytes(pe.blob.size) + ")" : "Current clip: " + p; }
+  function slider(label, val, min, max, on, help) {
+    var out = h("output", { text: val + "%" });
+    var r = h("input", { type: "range", min: min, max: max, value: val });
+    r.addEventListener("input", function () { out.textContent = r.value + "%"; on(+r.value); });
+    return wrap(label, h("div", { class: "range" }, r, out), help);
+  }
+
+  /* ---------- About ---------- */
+  function renderAbout(m) {
+    var A = state.content.about;
+    add(m, h("h2", { text: "About" })); add(m, h("p", { class: "sub", text: "The services page and the founder section." }));
+    add(m, h("fieldset", {}, h("legend", { text: "Headline" }), text("Heading", A, "heading"), text("Intro line", A, "lead", { area: true, rows: 3 })));
+    var gbox = h("div");
+    function draw() {
+      gbox.innerHTML = "";
+      A.groups.forEach(function (g, gi) {
+        var items = h("div");
+        function drawItems() {
+          items.innerHTML = "";
+          g.items.forEach(function (it, ii) {
+            add(items, h("div", { class: "svcbox" }, text("Service", it, "title"), text("Description", it, "text", { area: true, rows: 3 }), check("Show the “Watch the reel” link here", it, "reel"),
+              h("div", { style: "display:flex;gap:6px" },
+                h("button", { class: "btn sm", type: "button", text: "↑", onclick: function () { if (move(g.items, ii, -1)) { drawItems(); touch(); } } }),
+                h("button", { class: "btn sm", type: "button", text: "↓", onclick: function () { if (move(g.items, ii, 1)) { drawItems(); touch(); } } }),
+                h("button", { class: "btn sm bad", type: "button", text: "Remove", onclick: function () { g.items.splice(ii, 1); drawItems(); touch(); } }))));
+          });
+        }
+        drawItems();
+        add(gbox, h("div", { class: "grp" }, text("Group name", g, "name"), items,
+          h("div", { style: "display:flex;gap:6px;flex-wrap:wrap" },
+            h("button", { class: "btn sm", type: "button", text: "+ Add service", onclick: function () { g.items.push({ title: "New service", text: "" }); drawItems(); touch(); } }),
+            h("button", { class: "btn sm", type: "button", text: "Group ↑", onclick: function () { if (move(A.groups, gi, -1)) { draw(); touch(); } } }),
+            h("button", { class: "btn sm", type: "button", text: "Group ↓", onclick: function () { if (move(A.groups, gi, 1)) { draw(); touch(); } } }),
+            h("button", { class: "btn sm bad", type: "button", text: "Remove group", onclick: function () { A.groups.splice(gi, 1); draw(); touch(); } }))));
+      });
+    }
+    draw();
+    add(m, h("fieldset", {}, h("legend", { text: "Services" }), gbox, h("div", { style: "margin-top:14px" }, h("button", { class: "btn sm", type: "button", text: "+ Add group", onclick: function () { A.groups.push({ name: "New group", items: [] }); draw(); touch(); } }))));
+    var F = A.founder;
+    var pimg = h("img", { class: "thumb", style: "width:96px;aspect-ratio:4/5", alt: "", src: srcOf(F.portrait) });
+    add(m, h("fieldset", {}, h("legend", { text: "Founder" }),
+      text("Button label", F, "button"), text("Name", F, "name"),
+      h("div", { class: "media" }, pimg, h("div", {}, h("div", { class: "hint", text: "Portrait (4:5 works best)" }), h("button", { class: "btn sm", style: "margin-top:8px", type: "button", text: "Replace portrait", onclick: function () {
+        uploadImage("site", "portrait", { max: 1400 }).then(function (p) { if (p) { F.portrait = p; pimg.src = srcOf(p); touch(); } });
+      } }))),
+      text("Portrait description", F, "portraitAlt"),
+      lines("Bio", function () { return (F.paragraphs || []).join("\n\n"); }, function (v) { F.paragraphs = v.split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean); }, { rows: 12, help: "Separate paragraphs with a blank line." })));
+  }
+
+  /* ---------- Contact ---------- */
+  function renderContact(m) {
+    var K = state.content.contact;
+    add(m, h("h2", { text: "Contact" })); add(m, h("p", { class: "sub", text: "The contact page." }));
+    add(m, h("fieldset", {}, h("legend", { text: "Page" }), text("Heading", K, "heading"), text("Intro line", K, "lead", { area: true, rows: 2 }), text("Email", K, "email", { type: "email" }),
+      lines("Links", function () { return (K.links || []).map(function (l) { return l.label + " | " + l.url; }).join("\n"); }, function (v) {
+        K.links = textToPairs(v).map(function (r) { return { label: r[0], url: r[1] }; }).filter(function (l) { return l.label && l.url; });
+      }, { rows: 5, help: "One per line: Label | https://…" })));
+  }
+
+  /* ---------- Site ---------- */
+  function renderSite(m) {
+    var S = state.content.site;
+    add(m, h("h2", { text: "Home & reel link" })); add(m, h("p", { class: "sub", text: "The opening screen and the directing reel." }));
+    add(m, h("fieldset", {}, h("legend", { text: "Opening screen" }), text("Line 1", S, "tagline1"), text("Line 2", S, "tagline2")));
+    add(m, h("fieldset", {}, h("legend", { text: "Directing reel" }), text("Reel link", S, "reelUrl", { type: "url", ph: "https://vimeo.com/…", help: "Leave blank to show “Reel coming soon” on the About page. Once set, it becomes “Watch the reel” (turn the link on under About → In-House Directing)." })));
+  }
+
+  /* ---------- GitHub ---------- */
+  function gh(path, opt) {
+    opt = opt || {};
+    var c = state.conn, repo = c.repo || DEFAULT_REPO;
+    return fetch("https://api.github.com/repos/" + repo + path, {
+      method: opt.method || "GET", cache: "no-store",
+      headers: Object.assign({ Authorization: "Bearer " + c.token, Accept: opt.accept || "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }, opt.body ? { "Content-Type": "application/json" } : {}),
+      body: opt.body ? JSON.stringify(opt.body) : undefined
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { var e = new Error("GitHub " + r.status + ": " + (t || "").slice(0, 200)); e.status = r.status; throw e; });
+      return opt.raw ? r.text() : r.json();
+    });
+  }
+  function blobToB64(b) {
+    return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result).split(",")[1]); }; fr.onerror = rej; fr.readAsDataURL(b); });
+  }
+  function strToB64(s) { var u = new TextEncoder().encode(s), bin = "", i; for (i = 0; i < u.length; i += 8192) bin += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(bin); }
+
+  function connectDialog() {
+    var c = state.conn;
+    var tok = h("input", { type: "password", placeholder: "github_pat_…", value: c.token || "", autocomplete: "off" });
+    var repo = h("input", { type: "text", value: c.repo || DEFAULT_REPO });
+    var msg = h("div", { class: "hint" });
+    var dlg = h("div", { class: "dialog" }, h("h3", { text: "Connect to GitHub" }),
+      h("p", { text: "Publishing saves your edits to your GitHub repository, and Cloudflare then updates the site automatically. This needs a personal access token that only allows editing this one repository." }),
+      h("ol", { class: "steps" },
+        h("li", {}, "Open ", h("a", { href: "https://github.com/settings/personal-access-tokens/new", target: "_blank", rel: "noopener", text: "GitHub → New fine-grained token" }), "."),
+        h("li", { text: "Repository access: Only select repositories → arondyte-site." }),
+        h("li", { text: "Permissions → Repository → Contents: Read and write." }),
+        h("li", { text: "Generate, copy the token, and paste it below." })),
+      wrap("Token", tok), wrap("Repository", repo), msg,
+      h("div", { class: "acts" },
+        c.token ? h("button", { class: "btn bad", type: "button", text: "Disconnect", onclick: function () { state.conn = {}; saveConn(); close(); renderSide(); refreshStatus(); } }) : null,
+        h("button", { class: "btn", type: "button", text: "Cancel", onclick: close }),
+        h("button", { class: "btn pri", type: "button", text: "Save & test", onclick: function () {
+          var old = state.conn; state.conn = { token: tok.value.trim(), repo: repo.value.trim() || DEFAULT_REPO };
+          msg.textContent = "Testing…"; msg.className = "hint";
+          gh("").then(function (r) {
+            if (!r.permissions || !r.permissions.push) throw new Error("This token can read but not write. Set Contents to Read and write.");
+            saveConn(); msg.textContent = "Connected ✓"; msg.className = "okc";
+            setTimeout(function () { close(); renderSide(); refreshStatus(); if (!isDirty()) loadContent(true); }, 600);
+          }).catch(function (e) { state.conn = old; msg.textContent = e.message; msg.className = "err"; });
+        } })));
+    openModal(dlg);
+  }
+  function openModal(node) { var mo = $("#modal"); mo.innerHTML = ""; mo.appendChild(h("div", { class: "overlay" }, node)); }
+  function close() { $("#modal").innerHTML = ""; }
+
+  function referencedPaths() {
+    var set = {}; walkStrings(state.content, function (s) { if (state.pending[s]) set[s] = true; }); return Object.keys(set);
+  }
+  function validate() {
+    var errs = [], keys = {};
+    state.content.films.forEach(function (f) {
+      if (!f.title || !f.title.trim()) errs.push("A film is missing its title.");
+      if (keys[f.key]) errs.push("Duplicate film key: " + f.key); keys[f.key] = 1;
+    });
+    referencedPaths().forEach(function (p) { if (state.pending[p].blob.size > MAX_FILE) errs.push(p + " is over 25 MB."); });
+    return errs;
+  }
+
+  function publish() {
+    if (!state.conn.token) { connectDialog(); return; }
+    var errs = validate(); if (errs.length) { alert(errs.join("\n")); return; }
+    state.busy = true; refreshStatus();
+    var bar = h("i"), line = h("div", { class: "hint", text: "Starting…" });
+    var dlg = h("div", { class: "dialog" }, h("h3", { text: "Publishing" }), h("div", { class: "prog" }, bar), line);
+    openModal(dlg);
+    function prog(n, t, msg) { bar.style.width = Math.round(n / t * 100) + "%"; line.textContent = msg; }
+    var branch = state.conn.branch || DEFAULT_BRANCH, files = referencedPaths(), stamp = new Date().toISOString();
+    state.content.site.updated = stamp;
+    var body = serializeContent(state.content);
+    var total = files.length + 5, n = 0, headSha, baseTree, entries = [];
+    gh("/git/ref/heads/" + branch).then(function (r) {
+      headSha = r.object.sha; prog(++n, total, "Reading the current site…");
+      return gh("/git/commits/" + headSha);
+    }).then(function (c) {
+      baseTree = c.tree.sha;
+      return files.reduce(function (pr, p) {
+        return pr.then(function () {
+          prog(n, total, "Uploading " + p.split("/").pop() + " (" + (n - 1) + " of " + files.length + ")…");
+          return blobToB64(state.pending[p].blob).then(function (b64) { return gh("/git/blobs", { method: "POST", body: { content: b64, encoding: "base64" } }); })
+            .then(function (b) { entries.push({ path: p, mode: "100644", type: "blob", sha: b.sha }); n++; });
+        });
+      }, Promise.resolve());
+    }).then(function () {
+      prog(n, total, "Saving text changes…");
+      return gh("/git/blobs", { method: "POST", body: { content: strToB64(body), encoding: "base64" } });
+    }).then(function (b) {
+      entries.push({ path: "content.js", mode: "100644", type: "blob", sha: b.sha }); prog(++n, total, "Creating the update…");
+      return gh("/git/trees", { method: "POST", body: { base_tree: baseTree, tree: entries } });
+    }).then(function (t) {
+      return gh("/git/commits", { method: "POST", body: { message: "Update site content (Arondyte editor)", tree: t.sha, parents: [headSha] } });
+    }).then(function (c) {
+      prog(++n, total, "Publishing…");
+      return gh("/git/refs/heads/" + branch, { method: "PATCH", body: { sha: c.sha } });
+    }).then(function () {
+      prog(total, total, "Saved. Waiting for the site to update (usually under a minute)…");
+      files.forEach(function (p) { /* keep blobs for preview until reload */ });
+      state.orig = JSON.stringify(state.content); state.busy = false; refreshStatus("Published; site is updating…", "ok");
+      return waitLive(stamp, line);
+    }).then(function (live) {
+      line.textContent = live ? "Live ✓ Your changes are on the site." : "Saved. The site can take a couple more minutes to show it.";
+      line.className = live ? "okc" : "hint";
+      dlg.appendChild(h("div", { class: "acts" }, h("button", { class: "btn pri", type: "button", text: "Done", onclick: close })));
+      refreshStatus();
+    }).catch(function (e) {
+      state.busy = false; refreshStatus();
+      var msg = e.status === 401 || e.status === 403 ? "GitHub refused the token. Reconnect with a token that has Contents: Read and write." : e.message;
+      line.className = "err"; line.textContent = "Couldn't publish. " + msg;
+      dlg.appendChild(h("div", { class: "acts" }, h("button", { class: "btn", type: "button", text: "Close", onclick: close })));
+    });
+  }
+  function waitLive(stamp, line) {
+    var tries = 0;
+    return new Promise(function (res) {
+      (function poll() {
+        tries++;
+        fetch("/content.js?_=" + Date.now(), { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (t) {
+          if (t.indexOf(stamp) > -1) res(true); else if (tries > 36) res(false); else setTimeout(poll, 5000);
+        }).catch(function () { if (tries > 36) res(false); else setTimeout(poll, 5000); });
+      })();
+    });
+  }
+
+  /* ---------- load ---------- */
+  function loadContent(fromGitHub) {
+    var p;
+    if (state.conn.token && fromGitHub !== false) {
+      p = gh("/contents/content.js?ref=" + (state.conn.branch || DEFAULT_BRANCH), { accept: "application/vnd.github.raw+json", raw: true })
+        .then(function (t) { state.sourceLabel = "Loaded from GitHub (latest)"; return t; })
+        .catch(function () { return siteText(); });
+    } else p = siteText();
+    return p.then(function (t) {
+      state.content = parseContent(t); state.orig = JSON.stringify(state.content); state.pending = {};
+      var films = state.content.films; state.sel = { t: "film", key: films[0] ? films[0].key : null };
+      renderSide(); renderMain(); refreshStatus(); reloadPreview();
+    }).catch(function (e) { $("#main").textContent = "Couldn't load the site content: " + e.message; refreshStatus("Load failed", ""); });
+  }
+  function siteText() { state.sourceLabel = "Loaded from the live site"; return fetch("/content.js?_=" + Date.now(), { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error("content.js not found"); return r.text(); }); }
+
+  pubBtn.addEventListener("click", publish);
+  disBtn.addEventListener("click", function () { if (confirm("Discard all unpublished changes?")) { state.content = JSON.parse(state.orig); state.pending = {}; state.sel = { t: "film", key: state.content.films[0] ? state.content.films[0].key : null }; renderSide(); renderMain(); refreshStatus(); reloadPreview(); } });
+  window.addEventListener("beforeunload", function (e) { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
+  loadContent();
+})();
+</script>
+</body>
+</html>

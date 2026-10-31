@@ -4,7 +4,7 @@ window.CONTENT = {
   "tagline1": "Character-driven genre films",
   "tagline2": "A tri-state production company",
   "reelUrl": "",
-  "updated": "2026-10-31T19:23:20.766Z"
+  "updated": "2026-10-31T21:32:43.550Z"
  },
  "about": {
   "heading": "Production Management",
@@ -84,7 +84,7 @@ window.CONTENT = {
  "films": [
   {
    "key": "tbote",
-   "title": "The Beginning of the End",
+   "title": "The Beginning of the Beginning",
    "genre": "Supernatural Thriller",
    "year": "2023",
    "runtime": "22:24",
@@ -401,7 +401,8 @@ window.CONTENT = {
      "Marketing supervisor",
      "Nimmi Kota"
     ]
-   ]
+   ],
+   "slug": "the-beginning-of-the-end"
   },
   {
    "key": "raid",
@@ -523,7 +524,8 @@ window.CONTENT = {
      "Key grip",
      "McMahon Sykes"
     ]
-   ]
+   ],
+   "slug": "the-raid"
   },
   {
    "key": "chronicles",
@@ -582,7 +584,8 @@ window.CONTENT = {
      "Art direction",
      "Jade Chew, Sophia M. Jacobs"
     ]
-   ]
+   ],
+   "slug": "the-chronicles-farsight"
   },
   {
    "key": "homestead",
@@ -705,7 +708,8 @@ window.CONTENT = {
      "Production assistants",
      "Talia Pincus, Toby Mossa, Sadie Mossa"
     ]
-   ]
+   ],
+   "slug": "the-homestead"
   },
   {
    "key": "lawless",
@@ -826,7 +830,8 @@ window.CONTENT = {
      "Production assistant",
      "Bela Cwik"
     ]
-   ]
+   ],
+   "slug": "the-lawless"
   },
   {
    "key": "intervention",
@@ -938,7 +943,8 @@ window.CONTENT = {
      "Production assistant",
      "John Glowacki"
     ]
-   ]
+   ],
+   "slug": "the-intervention"
   },
   {
    "key": "strange",
@@ -1160,7 +1166,8 @@ window.CONTENT = {
      "Chef",
      "Jocelyn Dang"
     ]
-   ]
+   ],
+   "slug": "strange-key"
   }
  ]
 };

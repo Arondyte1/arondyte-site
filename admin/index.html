@@ -127,7 +127,7 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
   var LS = "arondyte_editor_v1";
   var DEFAULT_REPO = "Arondyte1/arondyte-site", DEFAULT_BRANCH = "main";
   var MAX_FILE = 25 * 1024 * 1024;
-  var state = { content: null, orig: "", pending: {}, sel: { t: "film", key: null }, conn: loadConn(), sourceLabel: "", busy: false };
+  var state = { content: null, orig: "", pending: {}, autoSlug: {}, sel: { t: "film", key: null }, conn: loadConn(), sourceLabel: "", busy: false };
 
   /* ---------- helpers ---------- */
   function $(s, r) { return (r || document).querySelector(s); }
@@ -149,6 +149,12 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
     if (c == null || c === false) return;
     if (Array.isArray(c)) c.forEach(function (x) { add(el, x); });
     else el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  function slugify(t) { return String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+  function uniqueSlug(base, exceptKey) {
+    var s = base || "film", n = 2, taken = function (x) { return state.content.films.some(function (f) { return f.key !== exceptKey && f.slug === x; }); };
+    while (taken(s)) s = (base || "film") + "-" + n++;
+    return s;
   }
   function uid() { return Math.random().toString(36).slice(2, 8); }
   function slug(t) { return String(t).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "film"; }
@@ -302,7 +308,8 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
   /* ---------- film actions ---------- */
   function addFilm() {
     var n = 1, key; do { key = "new-film" + (n > 1 ? "-" + n : ""); n++; } while (film(key));
-    state.content.films.push({ key: key, title: "New Film", genre: "", year: "", runtime: "", status: "In development", company: "Arondyte Pictures", soon: true, watch: "", imdb: "", logline: "", lead: "Justin Cole Mossa", leadLabel: "", extra: [], starring: [], clip: "", poster: "", pos: "50% 50%", panP: null, ar: "", hover: "", glow: "rgba(63,116,144,.30)", lx: "50%", ly: "40%", stillsLabel: "", compact: false, stills: [], laurels: [], cast: [], crew: [] });
+    state.autoSlug[key] = true;
+    state.content.films.push({ key: key, slug: uniqueSlug("new-film"), title: "New Film", genre: "", year: "", runtime: "", status: "In development", company: "Arondyte Pictures", soon: true, watch: "", imdb: "", logline: "", lead: "Justin Cole Mossa", leadLabel: "", extra: [], starring: [], clip: "", poster: "", pos: "50% 50%", panP: null, ar: "", hover: "", glow: "rgba(63,116,144,.30)", lx: "50%", ly: "40%", stillsLabel: "", compact: false, stills: [], laurels: [], cast: [], crew: [] });
     state.sel = { t: "film", key: key }; renderSide(); renderMain(); touch();
   }
 
@@ -324,8 +331,15 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
       h("button", { class: "btn sm", type: "button", text: "Move up", disabled: idx === 0 ? "" : null, onclick: function () { if (move(arr, idx, -1)) { renderSide(); renderMain(); touch(); } } }), " ",
       h("button", { class: "btn sm", type: "button", text: "Move down", disabled: idx === arr.length - 1 ? "" : null, onclick: function () { if (move(arr, idx, 1)) { renderSide(); renderMain(); touch(); } } })));
 
+    var slugIn, slugHint = h("small", { text: "" });
+    function showSlug() { slugHint.textContent = "Address: arondytepictures.com/films/" + (f.slug || ""); }
+    slugIn = h("input", { type: "text", value: f.slug || "", placeholder: "the-film-title" });
+    slugIn.addEventListener("input", function () { delete state.autoSlug[f.key]; f.slug = slugify(slugIn.value); showSlug(); touch(); });
+    slugIn.addEventListener("blur", function () { slugIn.value = f.slug || ""; });
+    showSlug();
     var basics = h("fieldset", {}, h("legend", { text: "Basics" }),
-      text("Title", f, "title", { after: refreshSideLabels }),
+      text("Title", f, "title", { after: function () { refreshSideLabels(); if (state.autoSlug[f.key]) { f.slug = uniqueSlug(slugify(f.title), f.key); slugIn.value = f.slug; showSlug(); } } }),
+      h("label", { class: "f" }, h("span", { text: "Page address" }), slugIn, slugHint, h("small", { text: "Lowercase letters, numbers and hyphens. Changing it later breaks links people already shared." })),
       h("div", { class: "row3" }, text("Genre", f, "genre"), text("Year", f, "year", { after: refreshSideLabels }), text("Runtime", f, "runtime", { ph: "e.g. 22:24" })),
       text("Status", f, "status", { ph: "Leave blank for a released film", help: "Examples: In post-production, In development, In pre-production. Blank = shows the year." }),
       text("Production credit", f, "company", { help: "Shown on the home screen and film page, e.g. Arondyte Pictures · OD7 Films" }),
@@ -583,14 +597,17 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
     state.content.films.forEach(function (f) {
       if (!f.title || !f.title.trim()) errs.push("A film is missing its title.");
       if (keys[f.key]) errs.push("Duplicate film key: " + f.key); keys[f.key] = 1;
+      if (!f.slug) errs.push((f.title || "A film") + " needs a page address.");
     });
+    var seen = {};
+    state.content.films.forEach(function (f) { if (f.slug && seen[f.slug]) errs.push("Two films share the page address “" + f.slug + "”."); seen[f.slug] = 1; });
     referencedPaths().forEach(function (p) { if (state.pending[p].blob.size > MAX_FILE) errs.push(p + " is over 25 MB."); });
     return errs;
   }
 
   function publish() {
-    if (!state.conn.token) { connectDialog(); return; }
     var errs = validate(); if (errs.length) { alert(errs.join("\n")); return; }
+    if (!state.conn.token) { connectDialog(); return; }
     state.busy = true; refreshStatus();
     var bar = h("i"), line = h("div", { class: "hint", text: "Starting…" });
     var dlg = h("div", { class: "dialog" }, h("h3", { text: "Publishing" }), h("div", { class: "prog" }, bar), line);
@@ -661,7 +678,7 @@ textarea { resize:vertical; min-height:70px; line-height:1.5; }
         .catch(function () { return siteText(); });
     } else p = siteText();
     return p.then(function (t) {
-      state.content = parseContent(t); state.orig = JSON.stringify(state.content); state.pending = {};
+      state.content = parseContent(t); state.content.films.forEach(function (f) { if (!f.slug) f.slug = slugify(f.title) || f.key; }); state.orig = JSON.stringify(state.content); state.pending = {}; state.autoSlug = {};
       var films = state.content.films; state.sel = { t: "film", key: films[0] ? films[0].key : null };
       renderSide(); renderMain(); refreshStatus(); reloadPreview();
     }).catch(function (e) { $("#main").textContent = "Couldn't load the site content: " + e.message; refreshStatus("Load failed", ""); });

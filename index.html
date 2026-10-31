@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <title>Arondyte Pictures</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="icon" href="media/site/favicon.png">
+<link rel="icon" href="/media/site/favicon.png">
 <script>try{if(/[?&]preview=1/.test(location.search)&&window.parent!==window&&window.parent.__DRAFT)window.__USE_DRAFT=true;}catch(e){}</script>
-<script src="content.js"></script>
+<script src="/content.js"></script>
 <script>if(window.__USE_DRAFT)window.CONTENT=window.parent.__DRAFT;</script>
+<script>(function(){function f(o){if(typeof o==="string")return /^(media\/|clip-)/.test(o)?"/"+o:o;if(Array.isArray(o))return o.map(f);if(o&&typeof o==="object")for(var k in o)o[k]=f(o[k]);return o;}if(window.CONTENT)f(window.CONTENT);})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Syncopate:wght@400;700&display=swap">
@@ -415,7 +416,7 @@ a { color: inherit; }
 </style>
 
 <div class="bar">
-  <a class="mark" href="#" id="home" aria-label="Arondyte Pictures, back to start"><img alt="Arondyte Pictures sword mark" src="media/site/mark.png"></a>
+  <a class="mark" href="#" id="home" aria-label="Arondyte Pictures, back to start"><img alt="Arondyte Pictures sword mark" src="/media/site/mark.png"></a>
   <nav class="nav" aria-label="Main">
     <button type="button" data-go="1">Films</button>
     <button type="button" data-open="about">About</button>
@@ -824,6 +825,9 @@ a { color: inherit; }
   var reel = document.getElementById("reel");
   var ticks = document.getElementById("ticks");
   var N = films.length;
+  function slugify(t) { return String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+  var slugByKey = {}, keyBySlug = {};
+  (CONTENT.films || []).forEach(function (c) { var sl = slugify(c.slug) || slugify(c.title) || c.key; slugByKey[c.key] = sl; keyBySlug[sl] = c.key; });
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
@@ -888,7 +892,7 @@ a { color: inherit; }
       ft.addEventListener("focus", function () { s.classList.add("hov"); });
       ft.addEventListener("blur", function () { s.classList.remove("hov"); });
       ft.addEventListener("keydown", function (e) { if (e.key === "Enter") openFilm(f.page); });
-      s.querySelector(".open-film").addEventListener("click", function (e) { e.preventDefault(); openFilm(f.page); });
+      s.querySelector(".open-film").href = "/films/" + (slugByKey[f.page] || f.page); s.querySelector(".open-film").addEventListener("click", function (e) { e.preventDefault(); openFilm(f.page); });
     }
 
     var t = document.createElement("button");
@@ -1018,12 +1022,14 @@ a { color: inherit; }
     document.querySelector(".bar").classList.add("solid");
     buildPanelMeter(); document.querySelector(".bar").classList.remove("away");
     document.querySelectorAll("[data-open]").forEach(function (b) { b.classList.toggle("act", b.dataset.open === id); });
+    syncUrl();
   }
   function close() {
     if (!openPanel) return;
     openPanel.hidden = true; openPanel = null;
     document.querySelector(".bar").classList.remove("solid"); pMeter.hidden = true;
     document.querySelectorAll("[data-open]").forEach(function (b) { b.classList.remove("act"); });
+    syncUrl();
   }
   document.querySelectorAll("[data-open]").forEach(function (b) { b.addEventListener("click", function () { open(b.dataset.open); }); });
   closeBtn.addEventListener("click", close);
@@ -1099,7 +1105,7 @@ a { color: inherit; }
     if (busy) return; busy = true;
     barEl.classList.remove("away");
     viewEl.style.transition = "none"; viewEl.style.opacity = "0";
-    homeMeter.hidden = true; window.__film.open(key); syncVideos();
+    homeMeter.hidden = true; closingFilm = false; window.__film.open(key); syncUrl(); syncVideos();
     viewEl.classList.remove("anim"); viewEl.style.setProperty("--dy", heroDy() + "px"); viewEl.classList.add("full");
     void viewEl.offsetWidth;
     viewEl.style.transition = "opacity 200ms ease"; viewEl.style.opacity = "1";
@@ -1107,7 +1113,7 @@ a { color: inherit; }
     setTimeout(function () { viewEl.classList.remove("anim"); viewEl.style.transition = ""; viewEl.style.opacity = ""; busy = false; }, 220 + 900);
   }
   function closeFilm(cb) {
-    if (busy) return; busy = true;
+    if (busy) return; busy = true; closingFilm = true; syncUrl();
     barEl.classList.remove("away");
     viewEl.style.scrollBehavior = "auto"; viewEl.scrollTop = 0; viewEl.style.scrollBehavior = "";
     viewEl.style.setProperty("--dy", heroDy() + "px");
@@ -1115,7 +1121,7 @@ a { color: inherit; }
     setTimeout(function () {
       homeMeter.hidden = false; barEl.classList.remove("fsolid"); if (cb) cb();
       viewEl.style.transition = "opacity 220ms ease"; viewEl.style.opacity = "0";
-      setTimeout(function () { window.__film.close(); syncVideos(); viewEl.classList.remove("anim"); viewEl.classList.remove("full"); viewEl.style.transition = ""; viewEl.style.opacity = ""; clearT(); busy = false; }, 240);
+      setTimeout(function () { closingFilm = false; window.__film.close(); syncVideos(); viewEl.classList.remove("anim"); viewEl.classList.remove("full"); viewEl.style.transition = ""; viewEl.style.opacity = ""; clearT(); busy = false; }, 240);
     }, 880);
   }
   function barWatch(el) {
@@ -1140,7 +1146,7 @@ a { color: inherit; }
       var st = viewEl.scrollTop;
       viewEl.parentNode.insertBefore(old, viewEl.nextSibling); old.scrollTop = st;
       viewEl.style.transition = "none"; viewEl.style.transform = "translate3d(100%,0,0)";
-      window.__film.show(nx.page); viewEl.scrollTop = 0; void viewEl.offsetWidth;
+      window.__film.show(nx.page); syncUrl(); viewEl.scrollTop = 0; void viewEl.offsetWidth;
       var tr = "transform 600ms " + EASE;
       old.style.transition = tr; viewEl.style.transition = tr;
       old.style.transform = "translate3d(-100%,0,0)"; viewEl.style.transform = "translate3d(0,0,0)";
@@ -1148,6 +1154,59 @@ a { color: inherit; }
     }
     else closeFilm(function () { go(qi + 2, true); });
   });
+
+  /* ---------- page addresses: /films/<name>, /about, /contact ---------- */
+  var ROUTING = !/[?&]preview=1/.test(location.search);
+  var closingFilm = false, popping = false, BASE_TITLE = "Arondyte Pictures";
+  function urlFor() {
+    if (openPanel) return "/" + openPanel.id;
+    if (window.__film.isOpen() && !closingFilm) return "/films/" + (slugByKey[window.__film.key()] || window.__film.key());
+    return "/";
+  }
+  function titleFor(u) {
+    if (u === "/about") return "About \u2014 " + BASE_TITLE;
+    if (u === "/contact") return "Contact \u2014 " + BASE_TITLE;
+    var m = u.match(/^\/films\/(.+)$/);
+    if (m && keyBySlug[m[1]]) return films[filmIdx(keyBySlug[m[1]])].title + " \u2014 " + BASE_TITLE;
+    return BASE_TITLE;
+  }
+  function syncUrl(replace) {
+    if (!ROUTING || (popping && !replace)) return;
+    var u = urlFor(), cur = location.pathname.replace(/\/+$/, "") || "/";
+    document.title = titleFor(u);
+    if (cur !== u) { try { history[replace ? "replaceState" : "pushState"]({}, "", u); } catch (e) {} }
+  }
+  function parseRoute(p) {
+    p = p.replace(/\/+$/, "") || "/";
+    var m = p.match(/^\/films\/([^\/]+)$/);
+    if (m) { var k = keyBySlug[decodeURIComponent(m[1]).toLowerCase()]; return k ? { t: "film", key: k } : { t: "missing" }; }
+    if (p === "/about") return { t: "panel", id: "about" };
+    if (p === "/contact") return { t: "panel", id: "contact" };
+    if (p === "/films") return { t: "films" };
+    return { t: p === "/" ? "home" : "missing" };
+  }
+  function applyRoute(r) {
+    popping = true;
+    var wait = 100;
+    if (r.t === "film") {
+      if (openPanel) close();
+      if (window.__film.isOpen()) { if (window.__film.key() !== r.key) window.__film.show(r.key); }
+      else openFilm(r.key);
+      wait = 1300;
+    } else if (r.t === "panel") {
+      if (!openPanel || openPanel.id !== r.id) open(r.id);
+    } else {
+      if (openPanel) close();
+      if (window.__film.isOpen()) { closeFilm(function () { if (r.t === "films") go(1, true); }); wait = 1400; }
+      else if (r.t === "films") go(1, true);
+    }
+    setTimeout(function () { popping = false; syncUrl(true); }, wait);
+  }
+  if (ROUTING) {
+    var r0 = parseRoute(location.pathname);
+    if (r0.t !== "home") setTimeout(function () { applyRoute(r0); }, 350);
+    window.addEventListener("popstate", function () { applyRoute(parseRoute(location.pathname)); });
+  }
 
   var copyBtn = document.getElementById("copyBtn");
   copyBtn.addEventListener("click", function () {

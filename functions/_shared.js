@@ -70,6 +70,7 @@ export function inject(html, meta, origin) {
     '<meta name="twitter:description" content="' + esc(meta.description) + '">',
     '<meta name="twitter:image" content="' + esc(img) + '">'
   ].join("\n");
+  html = html.replace(/<meta name="description"[^>]*>\s*/g, ""); // replaced by the page-specific one below
   // index.html has no closing </head>, so the tags go in with the title (which is inside <head>).
   return html.replace(/<title>[\s\S]*?<\/title>/, function () { return "<title>" + esc(meta.title) + "</title>\n" + tags; });
 }

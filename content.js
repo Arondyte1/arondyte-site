@@ -4,7 +4,7 @@ window.CONTENT = {
   "tagline1": "Character-driven genre films",
   "tagline2": "A tri-state production company",
   "reelUrl": "",
-  "updated": "2026-10-31T21:33:25.598Z"
+  "updated": "2026-11-05T18:17:57.918Z"
  },
  "about": {
   "heading": "Production Management",
@@ -65,7 +65,7 @@ window.CONTENT = {
  "contact": {
   "heading": "Let's make a film",
   "lead": "Reach out for an inquiry or to contact our production team.",
-  "email": "arondytepictures@gmail.com",
+  "email": "justin@arondytepictures.com",
   "links": [
    {
     "label": "Instagram",

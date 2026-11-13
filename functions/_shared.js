@@ -77,6 +77,48 @@ function jsonLd(content, kind, meta, origin) {
   return '<script type="application/ld+json">' + JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c") + "</script>";
 }
 
+
+// Plain-text version of the page for search engines and screen readers. The visible site draws
+// itself with JavaScript, so without this the raw HTML has no words or links in it at all.
+// It is visually hidden (standard accessibility technique) and says the same things the page does.
+function seoBlock(content, kind, meta, origin) {
+  var site = content.site || {}, about = content.about || {}, contact = content.contact || {};
+  function link(path, text) { return '<a href="' + esc(origin + path) + '" tabindex="-1">' + esc(text) + "</a>"; }
+  function fslug(f) { return slugify(f.slug) || slugify(f.title) || f.key; }
+  var films = (content.films || []).filter(function (f) { return !f.soon; });
+  var h = [];
+  if (kind === "film" && meta.film) {
+    var f = meta.film;
+    h.push("<h1>" + esc(f.title) + "</h1>");
+    var facts = [f.genre, f.year, f.runtime, f.status].filter(Boolean).join(" · ");
+    if (facts) h.push("<p>" + esc(facts) + "</p>");
+    if (f.logline) h.push("<p>" + esc(f.logline) + "</p>");
+    if (f.lead) h.push("<p>" + esc(f.leadLabel || "Directed by") + ": " + esc(f.lead) + "</p>");
+    (Array.isArray(f.extra) ? f.extra : []).forEach(function (r) { if (r && r[0] && r[1]) h.push("<p>" + esc(r[0]) + ": " + esc(r[1]) + "</p>"); });
+    if (f.starring) h.push("<p>Starring: " + esc([].concat(f.starring).join(", ")) + "</p>");
+  } else if (kind === "about") {
+    h.push("<h1>" + esc(about.heading || "About") + "</h1>");
+    if (about.lead) h.push("<p>" + esc(about.lead) + "</p>");
+    (about.groups || []).forEach(function (g) {
+      h.push("<h2>" + esc(g.name) + "</h2><ul>" + (g.items || []).map(function (i) { return "<li><strong>" + esc(i.title) + "</strong>: " + esc(i.text) + "</li>"; }).join("") + "</ul>");
+    });
+    var fo = about.founder || {};
+    if (fo.name) h.push("<h2>" + esc(fo.name) + "</h2>" + (fo.paragraphs || []).map(function (t) { return "<p>" + esc(t) + "</p>"; }).join(""));
+  } else if (kind === "contact") {
+    h.push("<h1>" + esc(contact.heading || "Contact") + "</h1>");
+    if (contact.lead) h.push("<p>" + esc(contact.lead) + "</p>");
+    if (contact.email) h.push('<p>Email: <a href="mailto:' + esc(contact.email) + '" tabindex="-1">' + esc(contact.email) + "</a></p>");
+  } else {
+    h.push("<h1>Arondyte Pictures</h1>");
+    h.push("<p>" + esc(meta.description) + "</p>");
+    if (about.lead) h.push("<p>" + esc(about.lead) + "</p>");
+  }
+  h.push("<nav aria-label=\"Site\"><ul>" + link("/", "Arondyte Pictures") + films.map(function (x) { return "<li>" + link("/films/" + fslug(x), x.title + (x.year ? " (" + x.year + ")" : "")) + "</li>"; }).join("") + "<li>" + link("/about", "About") + "</li><li>" + link("/contact", "Contact") + "</li></ul></nav>");
+  var soc = (contact.links || []).filter(function (l) { return l.url; });
+  if (soc.length) h.push("<ul>" + soc.map(function (l) { return '<li><a href="' + esc(l.url) + '" tabindex="-1">' + esc(l.label) + "</a></li>"; }).join("") + "</ul>");
+  return '<div style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap">' + h.join("") + "</div>\n";
+}
+
 export function inject(html, meta, origin, content) {
   var url = origin + meta.path, img = abs(origin, meta.image);
   var tags = [
@@ -95,6 +137,7 @@ export function inject(html, meta, origin, content) {
   ].join("\n");
   if (content) tags += "\n" + jsonLd(content, meta.kind, meta, origin);
   html = html.replace(/<meta name="description"[^>]*>\s*/g, ""); // replaced by the page-specific one below
+  if (content) { var sb = seoBlock(content, meta.kind, meta, origin); html = html.replace('<div class="bar">', function (m) { return sb + m; }); }
   // index.html has no closing </head>, so the tags go in with the title (which is inside <head>).
   return html.replace(/<title>[\s\S]*?<\/title>/, function () { return "<title>" + esc(meta.title) + "</title>\n" + tags; });
 }

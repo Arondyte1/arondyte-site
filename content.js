@@ -4,7 +4,7 @@ window.CONTENT = {
   "tagline1": "Character-driven genre films",
   "tagline2": "A tri-state production company",
   "reelUrl": "",
-  "updated": "2026-11-12T23:02:30.104Z"
+  "updated": "2026-11-25T00:43:16.362Z"
  },
  "about": {
   "heading": "Production Management",
@@ -84,7 +84,7 @@ window.CONTENT = {
  "films": [
   {
    "key": "tbote",
-   "title": "The Beginning of the End",
+   "title": "The Beginning of the Beginning",
    "genre": "Supernatural Thriller",
    "year": "2023",
    "runtime": "22:24",
